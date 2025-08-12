@@ -1,12 +1,15 @@
 name: human_readable_formats
-version: 0.1.0
+version: 1.0.0
 homepage: https://github.com/sdkwala/human-readable-formats-flutter
 repository: https://github.com/sdkwala/human-readable-formats-flutter
 description: >
-  Pure Dart package to format raw data (numbers, dates, file sizes, etc.) into human-readable text. Platform-independent, no Flutter dependency.
+  Comprehensive pure Dart package with 60+ formatting functions for numbers, dates, file sizes, 
+  network data, geographic coordinates, scientific notation, and complex data structures. 
+  Platform-independent with no Flutter dependencies.
 environment:
   sdk: ">=3.0.0 <4.0.0"
 dependencies:
   intl: ^0.19.0
 dev_dependencies:
   test: ^1.24.0
+  matcher: ^0.12.16

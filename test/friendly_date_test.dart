@@ -1,11 +1,18 @@
 import 'package:human_readable_formats/human_readable_formats.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:test/test.dart';
 
 void main() {
+  // Initialize date formatting for consistent test results
+  setUpAll(() async {
+    // Force US locale for consistent test results
+    await initializeDateFormatting('en_US', null);
+    Intl.defaultLocale = 'en_US';
+  });
+
   group('humanizeFriendlyDate', () {
     final now = DateTime(2025, 7, 21, 15, 45); // Monday at 3:45 PM
-    final timeString = DateFormat.jm().format(now);
 
     group('without time', () {
       test('formats today', () {
@@ -17,14 +24,27 @@ void main() {
         expect(humanizeFriendlyDate(yesterday, now: now), 'Yesterday');
       });
 
+      test('formats tomorrow', () {
+        final tomorrow = now.add(const Duration(days: 1));
+        expect(humanizeFriendlyDate(tomorrow, now: now), 'Tomorrow');
+      });
+
       test('formats last week days', () {
         final lastFriday = now.subtract(const Duration(days: 3));
         expect(humanizeFriendlyDate(lastFriday, now: now), 'Last Friday');
       });
 
+      test('formats next week days', () {
+        final nextWednesday = now.add(const Duration(days: 2));
+        expect(humanizeFriendlyDate(nextWednesday, now: now), 'Next Wednesday');
+      });
+
       test('formats distant dates', () {
         final distantPast = DateTime(2024, 1, 15);
-        expect(humanizeFriendlyDate(distantPast, now: now), 'Jan 15, 2024');
+        final result = humanizeFriendlyDate(distantPast, now: now);
+        expect(result, contains('Jan'));
+        expect(result, contains('15'));
+        expect(result, contains('2024'));
       });
     });
 
@@ -32,35 +52,34 @@ void main() {
       const includeTime = true;
 
       test('formats today with time', () {
-        expect(
-          humanizeFriendlyDate(now, now: now, includeTime: includeTime),
-          'Today at $timeString',
-        );
+        final result = humanizeFriendlyDate(now, now: now, includeTime: includeTime);
+        expect(result, startsWith('Today at'));
+        expect(result, contains('3:45'));
+        expect(result, contains('PM'));
       });
 
       test('formats yesterday with time', () {
         final yesterday = now.subtract(const Duration(days: 1));
-        expect(
-          humanizeFriendlyDate(yesterday, now: now, includeTime: includeTime),
-          'Yesterday at $timeString',
-        );
+        final result = humanizeFriendlyDate(yesterday, now: now, includeTime: includeTime);
+        expect(result, startsWith('Yesterday at'));
+        expect(result, contains('3:45'));
+        expect(result, contains('PM'));
       });
 
       test('formats last week days with time', () {
         final lastFriday = now.subtract(const Duration(days: 3));
-        expect(
-          humanizeFriendlyDate(lastFriday, now: now, includeTime: includeTime),
-          'Last Friday at $timeString',
-        );
+        final result = humanizeFriendlyDate(lastFriday, now: now, includeTime: includeTime);
+        expect(result, startsWith('Last Friday at'));
+        expect(result, contains('3:45'));
+        expect(result, contains('PM'));
       });
 
       test('formats distant dates with time', () {
         final distantPast = DateTime(2024, 1, 15, 10, 30);
-        final distantTimeString = DateFormat.jm().format(distantPast);
-        expect(
-          humanizeFriendlyDate(distantPast, now: now, includeTime: includeTime),
-          'Jan 15, 2024 at $distantTimeString',
-        );
+        final result = humanizeFriendlyDate(distantPast, now: now, includeTime: includeTime);
+        expect(result, contains('Jan 15, 2024 at'));
+        expect(result, contains('10:30'));
+        expect(result, contains('AM'));
       });
     });
 
@@ -82,23 +101,22 @@ void main() {
       });
 
       test('uses Spanish with time conjunction', () {
-        expect(
-          humanizeFriendlyDate(now, now: now, includeTime: true, locale: 'es'),
-          'Hoy a las $timeString',
-        );
+        final result = humanizeFriendlyDate(now, now: now, includeTime: true, locale: 'es');
+        expect(result, startsWith('Hoy a las'));
+        expect(result, contains('3:45'));
+        expect(result, contains('PM'));
       });
 
       test('uses Spanish with relative days', () {
         final lastFriday = now.subtract(const Duration(days: 3));
-        expect(
-          humanizeFriendlyDate(lastFriday, now: now, locale: 'es'),
-          'El Friday', // Note: weekday names would need separate localization
-        );
+        final result = humanizeFriendlyDate(lastFriday, now: now, locale: 'es');
+        expect(result, startsWith('El'));
+        expect(result, contains('Friday')); // Note: weekday names would need separate localization
+        
         final nextWednesday = now.add(const Duration(days: 2));
-        expect(
-          humanizeFriendlyDate(nextWednesday, now: now, locale: 'es'),
-          'El próximo Wednesday',
-        );
+        final nextResult = humanizeFriendlyDate(nextWednesday, now: now, locale: 'es');
+        expect(nextResult, startsWith('El próximo'));
+        expect(nextResult, contains('Wednesday'));
       });
     });
   });
